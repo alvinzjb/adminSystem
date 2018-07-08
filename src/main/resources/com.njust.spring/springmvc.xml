@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+      <!--配置拦截器--><!--主要是为了用户登录拦截，
+      用户名登录了则放行，反之则拦截-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/> <!--拦截所有资源包括子包-->
+            <bean class="com.njust.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    <!--自动扫描控制器controller-->
+    <context:component-scan base-package="com.njust.controller"/>
+    <!--加载注解驱动--><!--非常重要不能忘记-->
+      <mvc:annotation-driven />
+
+    <!--静态资源的释放--><!--乱码的解决不需要在这边?静态资源
+      的释放有两种方式,一种是直接进行配置-->
+      <mvc:default-servlet-handler/>
+
+
+      <!--配置视图解析器-->
+    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+</beans>

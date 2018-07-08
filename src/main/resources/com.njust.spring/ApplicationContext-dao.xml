@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+<!--数据库的连接-->
+              <!--获取数据库的配置文件-->
+    <context:property-placeholder location="classpath:config/db.properties"/>
+              <!--数据源C3P0的配置-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxPoolSize" value="50"/>
+        <property name="minPoolSize" value="2"/>
+        <property name="maxIdleTime" value="60"/>
+    </bean>
+           <!--事务的配置,手动配置事务-->
+    <!--事务管理器依赖于数据源-->
+    <bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--配置相关的事务由于增删改需要要手动提交事务，所以此不使用自动事务注解-->
+    <!--通知-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="create*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--切面-->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* com.njust.service.*.*(..))"/>
+    </aop:config>
+    <!--配置mybatis工厂-->
+    <bean  name="factory" class="org.mybatis.spring.SqlSessionFactoryBean">  <!--为什么此处不能取名为SqlSessionFactory-->
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:com.njust.mybatis/SqlMapConfig.xml"/>
+    </bean>
+
+              <!--mapper包的扫描,接口扫描-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.njust.mapper"/>
+    </bean>
+</beans>
